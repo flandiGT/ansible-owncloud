@@ -1,0 +1,10 @@
+---
+- name: create volume directories
+  file:
+    path: "{{item.value.path}}"
+    state: directory
+    owner: "{{item.value.uid}}"
+    group: "{{item.value.gid}}"
+    mode: "{{item.value.mode}}"
+  when: item.value is defined and item.value.path is defined and item.value.path | length > 0
+  with_dict: "{{docker_volumes}}"

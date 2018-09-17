@@ -1,0 +1,73 @@
+---
+service_name: owncloud
+
+docker:
+  workingdir: "/opt/{{service_name}}/docker"
+  force_build: no
+  cli_executible: /usr/bin/docker
+  compose_executible: /usr/local/bin/docker-compose
+
+docker_images:
+  service:
+    name: "local/{{service_name}}"
+    tag: "{{version}}"
+    path: "{{docker.workingdir}}"
+    force_build: "{{docker.force_build}}"
+  database:
+    name: postgres
+    tag: 9.4.5
+
+docker_volumes:
+  config:
+    path: "{{volumes.config}}"
+    uid: 33
+    gid: 65534
+    mode: "0777"
+  data:
+    path: "{{volumes.data}}"
+    uid: 33
+    gid: 0
+    mode: "0755"
+  database:
+    path: "{{volumes.database}}"
+    uid: 999
+    gid: 0
+    mode: "0700"
+
+docker_containers:
+  service:
+    image: "{{docker_images.service.name}}:{{docker_images.service.tag}}"
+    name: "{{service_name}}.service"
+    volumes:
+#      data: "{{volumes.data}}"
+#      backups: "{{volumes.backups}}"
+      /var/www/html/data: "{{volumes.data}}"
+      /var/www/html/config: "{{volumes.config}}"
+    publish:
+      interface: "{{publish.interface}}"
+      ports:
+  #      port: "{{publish.port}}"
+        80: "{{publish.port}}"
+    links:
+      database: db
+      cache: cache
+
+  database:
+    image: "{{docker_images.database.name}}:{{docker_images.database.tag}}"
+    name: "{{service_name}}_database.service"
+    environment:
+#      user: "{{database.user}}"
+#      password: "{{database.password}}"
+      POSTGRES_USER: "{{database.user}}"
+      POSTGRES_PASSWORD: "{{database.password}}"
+    volumes:
+#      data: "{{volumes.database}}"
+      /var/lib/postgresql/data: "{{volumes.database}}"
+
+  cache:
+    name: "{{service_name}}_cache.service"
+    image: redis:3.0.5
+
+docker_compose:
+  path: "{{docker.workingdir}}/compose"
+  filename: docker-compose.yml

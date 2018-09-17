@@ -1,0 +1,48 @@
+version: '3.1'
+
+{% if docker_containers | length > 0 %}
+services:
+{% for container in docker_containers %}
+  {{container}}:
+    image: {{docker_containers[container].image}}
+    container_name: {{docker_containers[container].name}}
+{% if docker_containers[container].environment is defined and docker_containers[container].environment.values() | length > 0 %}
+    environment:
+{% for environment in docker_containers[container].environment %}
+{% if docker_containers[container].environment[environment] is defined and docker_containers[container].environment[environment] | length > 0 %}
+    - {{environment}}={{docker_containers[container].environment[environment]}}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if docker_containers[container].volumes is defined and docker_containers[container].volumes.values() | length > 0 %}
+    volumes:
+{% for volume in docker_containers[container].volumes %}
+{% if docker_containers[container].volumes[volume] is defined and docker_containers[container].volumes[volume] | length > 0 %}
+    - {{docker_containers[container].volumes[volume]}}:{{volume}}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if docker_containers[container].publish is defined and docker_containers[container].publish.ports is defined and docker_containers[container].publish.ports.values() | length > 0 %}
+    ports:
+{% for port in docker_containers[container].publish.ports %}
+{% if docker_containers[container].publish.ports[port] is defined and docker_containers[container].publish.ports[port] | length > 0 %}
+    - {{docker_containers[container].publish.ports[port]}}:{{port}}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if docker_containers[container].links is defined and docker_containers[container].links.values() | length > 0 %}
+    links:
+{% for link in docker_containers[container].links %}
+{% if docker_containers[container].links[link] is defined and docker_containers[container].links[link] | length > 0 %}
+    - {{link}}:{{docker_containers[container].links[link]}}
+{% endif %}
+{% endfor %}
+{% endif %}
+    restart: always
+    networks:
+     - {{service_name}}_network
+{% endfor %}
+{% endif %}
+
+networks:
+  {{service_name}}_network:

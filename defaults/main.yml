@@ -1,0 +1,15 @@
+---
+version: 10.0.3
+
+volumes:
+  data: ''
+  config: ''
+  database: ''
+
+publish:
+  port: ''
+  interface: 0.0.0.0
+
+database:
+  user: ''
+  password: ''

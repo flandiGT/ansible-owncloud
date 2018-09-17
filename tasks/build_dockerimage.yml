@@ -1,0 +1,33 @@
+---
+- name: create docker working directory
+  file:
+    path: "{{docker.workingdir}}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+
+- name: create dockerimage directory
+  file:
+    path: "{{docker_images.service.path}}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+
+- name: template dockerfile
+  template:
+    src: ./docker/Dockerfile.j2
+    dest: "{{docker_images.service.path}}/Dockerfile"
+    owner: root
+    group: root
+    mode: 0554
+  register: dockerfile
+
+- name: build image
+  docker_image:
+    path: "{{docker_images.service.path}}"
+    name: "{{docker_images.service.name}}:{{docker_images.service.tag}}"
+    pull: no
+    force: "{{docker_images.service.force_build or dockerfile.changed}}"
+  register: dockerimage

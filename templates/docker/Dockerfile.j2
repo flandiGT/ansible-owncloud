@@ -1,0 +1,4 @@
+FROM owncloud:{{version}}-apache
+
+# Install smb client
+RUN     apt-get update && apt-get install -y smbclient

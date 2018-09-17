@@ -1,0 +1,28 @@
+---
+- hosts: test_machine
+  become: yes
+
+  pre_tasks:
+  - apt:
+      name: python-docker
+      update_cache: yes
+
+  post_tasks:
+  - apt:
+      name: python-docker
+      state: absent
+      purge: yes
+
+  roles:
+  - role: '.'
+    version: 10.0.3
+    volumes:
+      data: /srv/docker/owncloud/data
+      config: /srv/docker/owncloud/config
+      database: /srv/docker/owncloud/database
+    publish:
+      port: 8090
+      interface: 0.0.0.0
+    database:
+      user: postgres
+      password: my_super_secret_password
